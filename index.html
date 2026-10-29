@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEGO Minecraft - Morning Brief Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: VT323 (Pixel) & Inter (Readable) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1e1e1e; /* Dark stone background */
+      /* Minecraft dirt/stone pattern effect */
+      background-image: linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%, #2a2a2a), 
+                        linear-gradient(45deg, #2a2a2a 25%, transparent 25%, transparent 75%, #2a2a2a 75%, #2a2a2a);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+      color: #e5e5e5;
+    }
+
+    .font-minecraft {
+      font-family: 'VT323', monospace;
+      text-transform: uppercase;
+    }
+
+    /* Pixelated borders for buttons */
+    .mc-button {
+      border-bottom: 4px solid rgba(0,0,0,0.4);
+      border-right: 4px solid rgba(0,0,0,0.4);
+      border-top: 2px solid rgba(255,255,255,0.2);
+      border-left: 2px solid rgba(255,255,255,0.2);
+      border-radius: 4px; /* Less rounded for blocky feel */
+      transition: all 0.1s;
+    }
+    .mc-button:active {
+      transform: translate(2px, 2px);
+      border-bottom: 2px solid rgba(0,0,0,0.4);
+      border-right: 2px solid rgba(0,0,0,0.4);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121212; 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4ade80; 
+      border: 2px solid #121212;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #22c55e; 
+    }
+
+    @keyframes pulseTimer {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .animate-danger-pulse {
+      animation: pulseTimer 0.5s infinite steps(2, end);
+    }
+    
+    .mc-panel {
+      background-color: #c6c6c6; /* Classic UI grey */
+      color: #333;
+      border: 4px solid #fff;
+      border-bottom-color: #555;
+      border-right-color: #555;
+      border-radius: 0;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-green-500 selection:text-white">
+
+  <!-- HEADER -->
+  <header class="w-full bg-stone-900/90 backdrop-blur-md sticky top-0 z-50 px-4 py-3 shadow-md border-b-4 border-stone-700">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer group" onclick="app.showScreen('welcome')">
+        <!-- Grass Block Icon -->
+        <div class="w-12 h-12 bg-green-500 relative flex items-center justify-center font-black text-white mc-button group-hover:bg-green-400">
+          <div class="absolute bottom-0 w-full h-1/3 bg-amber-700"></div>
+          <span class="relative z-10 text-xl font-minecraft drop-shadow-md">MC</span>
+        </div>
+        <div>
+          <span class="text-[10px] sm:text-xs uppercase font-bold tracking-widest text-green-400 block">LEGO Store Brief</span>
+          <h1 class="text-3xl md:text-4xl font-minecraft font-bold tracking-tight text-white flex items-center gap-2 leading-none mt-1 drop-shadow-md">
+            MINECRAFT <span class="bg-green-600 text-white px-2 py-0.5 text-sm md:text-lg leading-none shadow-sm mc-button">QUIZ</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Header actions -->
+      <div class="flex items-center gap-2">
+        <button onclick="app.showLeaderboard()" class="px-3 py-2 bg-stone-700 hover:bg-stone-600 text-xs md:text-sm font-bold text-white mc-button flex items-center gap-1.5">
+          🏆 <span class="hidden sm:inline font-minecraft text-lg">Scores</span>
+        </button>
+        <button id="soundToggleBtn" onclick="app.toggleSound()" class="p-2.5 bg-stone-700 hover:bg-stone-600 text-green-400 mc-button" title="Activer / Couper le son">
+          <svg id="soundIconOn" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+          </svg>
+          <svg id="soundIconOff" class="w-5 h-5 hidden text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z m12.414-4.586L21 7.414M18 10.414l3 3"/>
+          </svg>
+        </button>
+        <button onclick="app.openCustomModal()" class="px-3 py-2 bg-stone-700 hover:bg-stone-600 text-xs md:text-sm font-bold text-white mc-button flex items-center gap-1.5">
+          <span class="text-purple-400 text-lg">✦</span> <span class="hidden sm:inline font-minecraft text-lg">Craft</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow flex items-center justify-center p-4 max-w-4xl w-full mx-auto relative z-10">
+
+    <!-- SCREEN 1: ACCUEIL & CHOIX DU MODE -->
+    <section id="screen-welcome" class="w-full text-center space-y-8 py-6">
+      <div class="space-y-3">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-stone-800 text-green-400 text-xs uppercase tracking-wider font-bold shadow-sm mc-button">
+          ⛏️ PRÉPAREZ VOS PIOCHES !
+        </div>
+        <h2 class="text-5xl md:text-7xl font-minecraft text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] pb-2">
+          LE GRAND <span class="text-green-500">CRAFT</span>
+        </h2>
+        <p class="text-stone-400 max-w-lg mx-auto text-sm md:text-base font-semibold">
+          Testez vos connaissances sur l'univers Minecraft et ses adaptations LEGO avant de miner en rayon !
+        </p>
+      </div>
+
+      <!-- Sélection du mode -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
+        <!-- Mode Solo -->
+        <div onclick="app.openNameSetup('solo')" class="group relative bg-stone-800 hover:bg-stone-700 p-6 cursor-pointer mc-button">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-green-900 text-green-400 flex items-center justify-center font-bold text-2xl mc-button">
+              💎
+            </div>
+            <span class="text-xs px-3 py-1 bg-stone-900 text-green-500 font-bold mc-button">Aventure</span>
+          </div>
+          <h3 class="text-3xl font-minecraft text-white group-hover:text-green-400 transition mb-2">Mode Survie (Solo)</h3>
+          <p class="text-sm text-stone-400 font-medium">Pour jouer tous ensemble sur l'écran ou tester le champion du jour.</p>
+        </div>
+
+        <!-- Mode Duel Équipes -->
+        <div onclick="app.openNameSetup('duel')" class="group relative bg-stone-800 hover:bg-stone-700 p-6 cursor-pointer mc-button">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-red-900 text-red-400 flex items-center justify-center font-bold text-2xl mc-button">
+              ⚔️
+            </div>
+            <span class="text-xs px-3 py-1 bg-stone-900 text-red-500 font-bold mc-button">Multijoueur</span>
+          </div>
+          <h3 class="text-3xl font-minecraft text-white group-hover:text-red-400 transition mb-2">Guerre des Mobs</h3>
+          <p class="text-sm text-stone-400 font-medium">Divisez l'équipe en deux factions et affrontez-vous au tour par tour.</p>
+        </div>
+      </div>
+
+      <!-- Quick Settings -->
+      <div class="flex flex-wrap items-center justify-center gap-6 text-sm text-stone-400 pt-4 font-semibold">
+        <label class="flex items-center gap-2 cursor-pointer bg-stone-800 px-4 py-2 mc-button hover:bg-stone-700 transition">
+          <input type="checkbox" id="timerEnabledCheck" checked class="w-4 h-4 accent-green-500 rounded-none bg-stone-900 border-stone-600">
+          <span>Chronomètre (15s)</span>
+        </label>
+        <span class="text-stone-600 hidden sm:inline">•</span>
+        <div class="bg-stone-800 px-4 py-2 mc-button text-stone-300">
+          Banque de données : <span id="poolCountText" class="text-cyan-400 font-bold font-minecraft text-xl">100</span> items
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: QUESTION EN COURS -->
+    <section id="screen-quiz" class="w-full hidden space-y-6">
+
+      <!-- Barre d'état (Scores, Tour, Minuteur) -->
+      <div class="mc-panel p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+        <!-- Info progression -->
+        <div class="flex items-center gap-3">
+          <span class="text-lg px-3 py-1 bg-stone-800 text-green-400 font-minecraft mc-button" id="currentRoundBadge">
+            Q1/10
+          </span>
+          <span class="text-sm font-bold px-3 py-1 text-stone-800 border-2 border-stone-400" id="categoryBadge">
+            Univers
+          </span>
+        </div>
+
+        <!-- Mode Duel Status -->
+        <div id="duelHeaderWidget" class="hidden flex items-center gap-3 text-xs font-bold">
+          <div id="teamAStatus" class="px-3 py-1.5 mc-button transition-all">
+            <span class="font-minecraft text-xl" id="uiTeamAName">CREEPERS</span> <span class="mx-1 text-stone-500">|</span> <span id="teamAScore" class="text-lg font-minecraft">0</span>
+          </div>
+          <span class="text-stone-500 font-minecraft text-2xl">VS</span>
+          <div id="teamBStatus" class="px-3 py-1.5 mc-button transition-all">
+            <span class="font-minecraft text-xl" id="uiTeamBName">ENDERMEN</span> <span class="mx-1 text-stone-500">|</span> <span id="teamBScore" class="text-lg font-minecraft">0</span>
+          </div>
+        </div>
+
+        <!-- Solo Score -->
+        <div id="soloHeaderWidget" class="text-sm font-bold text-stone-800 px-4 py-1.5 mc-button">
+          <span id="uiSoloName" class="font-minecraft text-xl text-stone-700">XP</span> <span class="mx-1 text-stone-400">|</span> <span id="soloScore" class="text-green-700 font-minecraft text-2xl drop-shadow-sm">0</span> <span class="font-minecraft text-lg">pts</span>
+        </div>
+
+        <!-- Actions & Timer -->
+        <div id="timerContainer" class="flex items-center gap-3 font-minecraft">
+          <!-- JOKER 50/50 - Potion de Chance -->
+          <button id="jokerBtn" onclick="app.useJoker()" class="flex items-center justify-center w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white text-xl mc-button transition" title="Potion de Chance (1 par partie)">
+            🧪
+          </button>
+          
+          <!-- Timer Block -->
+          <div id="timerBox" class="w-12 h-12 bg-stone-800 text-green-400 flex items-center justify-center text-3xl mc-button shadow-inner">
+            15
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn Indicator for Duel Mode -->
+      <div id="teamTurnIndicator" class="hidden text-center py-1">
+        <p class="text-3xl font-minecraft text-white drop-shadow-md" id="teamTurnText">
+          C'est au tour des <span class="text-green-400">CREEPERS</span> !
+        </p>
+      </div>
+
+      <!-- Question Card -->
+      <div class="mc-panel p-6 md:p-8 relative">
+        <div class="min-h-[100px] flex items-center justify-center text-center">
+          <h3 id="questionText" class="text-2xl md:text-3xl font-minecraft text-stone-900 leading-tight">
+            Génération du terrain...
+          </h3>
+        </div>
+
+        <!-- Options Container -->
+        <div id="optionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+          <!-- Injecté dynamiquement -->
+        </div>
+
+        <!-- Feedback & Explication -->
+        <div id="feedbackContainer" class="hidden mt-8 p-5 mc-button text-center space-y-3">
+          <div id="feedbackTitle" class="font-minecraft text-4xl tracking-wide drop-shadow-sm"></div>
+          <p id="feedbackExplanation" class="text-base text-stone-800 font-bold leading-snug"></p>
+          
+          <!-- ZONE MEDIA -->
+          <div id="feedbackMedia" class="w-full flex justify-center mt-3 empty:hidden overflow-hidden border-4 border-stone-800"></div>
+          
+          <button id="nextBtn" onclick="app.nextQuestion()" class="mt-4 px-8 py-3 bg-stone-800 hover:bg-stone-700 text-white font-minecraft text-2xl mc-button inline-flex items-center gap-2">
+            <span>BLOC SUIVANT</span>
+            <span class="text-green-400">➔</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: RÉSULTATS / BILAN -->
+    <section id="screen-results" class="w-full hidden text-center space-y-8 py-6">
+      <div class="space-y-3">
+        <div class="inline-block p-4 bg-amber-400 text-5xl mb-2 mc-button drop-shadow-md" id="resultTrophyIcon">
+          🏆
+        </div>
+        <h2 id="resultMainTitle" class="text-6xl md:text-7xl font-minecraft text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] pb-2">
+          GG WP !
+        </h2>
+        <p id="resultSubtitle" class="text-stone-400 max-w-md mx-auto text-base font-semibold">
+          La session de minage est terminée. Voici le butin !
+        </p>
+      </div>
+
+      <!-- Bilan Card -->
+      <div class="mc-panel p-6 md:p-10 max-w-xl mx-auto space-y-8">
+        
+        <div id="soloScoreDisplay" class="space-y-3">
+          <p class="text-2xl text-stone-600 font-minecraft uppercase">Niveau d'XP (Score)</p>
+          <div class="text-7xl font-minecraft text-green-600 drop-shadow-sm" id="finalScoreVal">8/10</div>
+          <div class="mt-4 inline-block px-5 py-2 bg-blue-100 text-blue-900 font-minecraft text-2xl mc-button" id="rankTitleBadge">Rang : Diamant</div>
+        </div>
+
+        <div id="duelScoreDisplay" class="hidden space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-6 bg-stone-300 mc-button text-center">
+              <span id="finalUiTeamAName" class="text-2xl font-minecraft text-stone-800 block mb-2">TEAM 1</span>
+              <span id="finalTeamAScore" class="text-7xl font-minecraft text-green-700">0</span>
+            </div>
+            <div class="p-6 bg-stone-300 mc-button text-center">
+              <span id="finalUiTeamBName" class="text-2xl font-minecraft text-stone-800 block mb-2">TEAM 2</span>
+              <span id="finalTeamBScore" class="text-7xl font-minecraft text-green-700">0</span>
+            </div>
+          </div>
+          <div id="duelWinnerText" class="text-3xl font-minecraft text-white bg-green-600 py-3 mc-button drop-shadow-md">
+            L'équipe gagne !
+          </div>
+        </div>
+
+        <!-- Conseil du jour -->
+        <div class="p-5 bg-stone-200 border-4 border-stone-400 text-left flex gap-4 items-center">
+          <span class="text-4xl">💡</span>
+          <div class="text-sm md:text-base text-stone-800 font-bold">
+            <strong class="text-green-700 block font-minecraft text-2xl mb-1">ASTUCE DE CRAFTING :</strong>
+            <span id="dailyMotto">Ne creusez jamais directement sous vos pieds. Bonne journée !</span>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <button onclick="app.showScreen('welcome')" class="px-6 py-3 bg-stone-800 hover:bg-stone-700 text-white font-minecraft text-2xl mc-button">
+            ACCUEIL
+          </button>
+          <button onclick="app.restartWithSameSettings()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-minecraft text-2xl mc-button">
+            REJOUER (MÊME MAP)
+          </button>
+          <button onclick="app.showLeaderboard()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-minecraft text-2xl mc-button">
+            SCORES
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: CLASSEMENT -->
+    <section id="screen-leaderboard" class="w-full hidden text-center space-y-8 py-6 relative z-10">
+      <div class="space-y-3">
+        <h2 class="text-5xl md:text-7xl font-minecraft text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] pb-2">
+          MUR DES LÉGENDES
+        </h2>
+        <p class="text-stone-400 max-w-md mx-auto text-base font-semibold">
+          Les plus grands bâtisseurs du magasin.
+        </p>
+      </div>
+
+      <div class="mc-panel p-6 md:p-8 max-w-2xl mx-auto">
+        <!-- Onglets -->
+        <div class="flex gap-4 border-b-4 border-stone-400 mb-6 pb-2 justify-center font-minecraft text-3xl">
+          <button onclick="app.renderLeaderboardList('solo')" id="tabSolo" class="text-green-700 bg-stone-300 mc-button px-4 py-2">SOLO</button>
+          <button onclick="app.renderLeaderboardList('duel')" id="tabDuel" class="text-stone-600 hover:text-stone-800 px-4 py-2">DUELS</button>
+        </div>
+
+        <div id="leaderboardList" class="space-y-4 text-left">
+          <!-- Injecté dynamiquement -->
+        </div>
+        
+        <div class="mt-10 flex justify-center gap-4">
+          <button onclick="app.showScreen('welcome')" class="px-8 py-3 bg-stone-800 hover:bg-stone-700 text-white font-minecraft text-2xl mc-button">
+            RETOUR
+          </button>
+          <button onclick="app.clearLeaderboard()" class="px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-minecraft text-xl mc-button flex items-center">
+            Reset la Map (Scores)
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: CHOIX DES NOMS -->
+  <div id="nameSetupModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+    <div class="mc-panel max-w-md w-full p-8 space-y-6">
+      <div class="flex justify-between items-center pb-3 border-b-4 border-stone-400">
+        <h3 class="text-4xl font-minecraft text-stone-900 drop-shadow-sm">GÉNÉRATION...</h3>
+        <button onclick="app.closeNameSetup()" class="text-stone-500 hover:text-red-500 text-4xl font-minecraft leading-none">&times;</button>
+      </div>
+      
+      <form id="nameSetupForm" onsubmit="app.startWithNames(event)" class="space-y-5">
+        <div id="soloNameInput" class="space-y-2">
+          <label class="block text-stone-700 text-lg font-minecraft">Nom du Joueur (Gamertag)</label>
+          <input type="text" id="participantName" placeholder="Ex: Steve, Alex..." class="w-full bg-stone-800 text-white mc-button p-3.5 font-minecraft text-2xl focus:outline-none focus:bg-stone-900 transition">
+        </div>
+
+        <div id="duelNameInputs" class="space-y-5 hidden">
+          <div>
+            <label class="block text-green-700 font-minecraft text-2xl mb-1">Faction 1</label>
+            <input type="text" id="team1Name" value="Les Creepers" class="w-full bg-stone-800 text-green-400 mc-button p-3.5 font-minecraft text-2xl focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-purple-700 font-minecraft text-2xl mb-1">Faction 2</label>
+            <input type="text" id="team2Name" value="Les Endermen" class="w-full bg-stone-800 text-purple-400 mc-button p-3.5 font-minecraft text-2xl focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" onclick="app.closeNameSetup()" class="px-5 py-3 bg-stone-400 hover:bg-stone-500 text-stone-900 font-minecraft text-2xl mc-button">ANNULER</button>
+          <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-minecraft text-2xl mc-button">JOUER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AJOUT DE QUESTION -->
+  <div id="customModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+    <div class="mc-panel max-w-lg w-full p-8 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center pb-3 border-b-4 border-stone-400">
+        <h3 class="text-4xl font-minecraft text-stone-900">NOUVELLE RECETTE (Q)</h3>
+        <button onclick="app.closeCustomModal()" class="text-stone-500 hover:text-red-500 text-4xl font-minecraft leading-none">&times;</button>
+      </div>
+      <form id="addQuestionForm" onsubmit="app.handleCustomQuestionSubmit(event)" class="space-y-4 text-sm font-bold text-stone-800">
+        <div>
+          <label class="block mb-1.5 font-minecraft text-xl">L'Énigme (Question)</label>
+          <textarea id="custQText" required rows="2" class="w-full bg-stone-800 text-white mc-button p-3 focus:outline-none font-inter" placeholder="Ex: Quel mob lâche de la poudre à canon ?"></textarea>
+        </div>
+        <div>
+          <label class="block text-green-700 mb-1.5 font-minecraft text-xl">Vrai (Bonne réponse)</label>
+          <input type="text" id="custQCorrect" required class="w-full bg-green-100 border-4 border-green-400 p-3 focus:outline-none text-green-900" placeholder="Le Creeper">
+        </div>
+        <div class="space-y-3">
+          <label class="block text-red-700 font-minecraft text-xl">Faux (Mauvaises réponses)</label>
+          <input type="text" id="custQWrong1" required class="w-full bg-red-100 border-4 border-red-400 p-3 focus:outline-none text-red-900" placeholder="Faux 1">
+          <input type="text" id="custQWrong2" class="w-full bg-red-100 border-4 border-red-400 p-3 focus:outline-none text-red-900" placeholder="Faux 2 (Optionnel)">
+          <input type="text" id="custQWrong3" class="w-full bg-red-100 border-4 border-red-400 p-3 focus:outline-none text-red-900" placeholder="Faux 3 (Optionnel)">
+        </div>
+        
+        <div>
+          <label class="block mb-1.5 mt-2 font-minecraft text-xl text-blue-700">Lien Image ou Vidéo YT (Optionnel)</label>
+          <input type="text" id="custQMedia" class="w-full bg-stone-800 text-blue-300 mc-button p-3 focus:outline-none font-inter" placeholder="Ex: https://www.youtube.com/watch?v=...">
+        </div>
+
+        <div>
+          <label class="block mb-1.5 mt-2 font-minecraft text-xl">Lore (Anecdote de fin)</label>
+          <textarea id="custQExpl" rows="2" class="w-full bg-stone-800 text-stone-300 mc-button p-3 focus:outline-none font-inter" placeholder="Ex: Le Creeper est né d'un bug de modélisation de cochon..."></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t-4 border-stone-400">
+          <button type="button" onclick="app.closeCustomModal()" class="px-5 py-3 bg-stone-400 hover:bg-stone-500 text-stone-900 font-minecraft text-2xl mc-button">ANNULER</button>
+          <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-minecraft text-2xl mc-button">CRAFTER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="w-full text-center py-5 text-sm text-stone-500 font-bold relative z-10 mt-auto font-minecraft text-lg">
+    <p>Conçu pour animer le brief d'équipe • LEGO® Minecraft • Creusez, construisez, survivez ! 🟩</p>
+  </footer>
+
+  <script>
+    /**
+     * BANQUE DE 100 QUESTIONS LEGO MINECRAFT / MINECRAFT
+     */
+    const INITIAL_QUESTIONS = [
+      // HISTOIRE LEGO MINECRAFT (1-20)
+      { question: "En quelle année est sorti le tout premier set LEGO Minecraft (Micro World) via la plateforme CUUSOO ?", options: ["2012", "2010", "2014", "2015"], correct: 0, category: "Histoire LEGO", explanation: "Le projet de koalaexpert sur CUUSOO (ancêtre de LEGO Ideas) a atteint 10 000 votes en quelques jours en 2012.", mediaUrl: "https://images.brickset.com/sets/large/21102-1.jpg" },
+      { question: "Quel était le format des personnages dans les 4 premiers sets LEGO Minecraft sortis entre 2012 et 2013 ?", options: ["Des Micro-mobs construits en briques 1x1", "Des Minifigurines classiques", "Des grandes figurines (Big Figs)", "Il n'y avait pas de personnages"], correct: 0, category: "Gamme LEGO", explanation: "Steve et le Creeper étaient composés d'une brique 1x1 tampographiée sur une plate 1x1." },
+      { question: "En quelle année LEGO a-t-il transitionné du format 'Micro World' vers les sets à l'échelle 'Minifigurine' (System) pour Minecraft ?", options: ["2014", "2012", "2016", "2018"], correct: 0, category: "Histoire LEGO", explanation: "La première vague 'Minifig Scale' est sortie fin 2014 avec des sets comme La Mine et La Ferme." },
+      { question: "Le tout premier set Minecraft à l'échelle minifigurine portait le numéro 21113. Quel était son nom ?", options: ["La Grotte (The Cave)", "La Mine (The Mine)", "Le Village (The Village)", "L'Établi (The Crafting Box)"], correct: 0, category: "Sets LEGO", explanation: "La Grotte incluait Steve, un zombie, une araignée, et des blocs de minerai de charbon." },
+      { question: "Dans les sets LEGO Minecraft, comment est représentée la tête standard d'une minifigurine humaine (Steve, Alex) ?", options: ["Un cube exclusif (tête carrée avec tenon au dessus)", "Une tête de minifigurine ronde classique", "Une brique 2x2 basique", "Un casque par-dessus une tête ronde"], correct: 0, category: "Design LEGO", explanation: "LEGO a créé un moule spécifique de tête carrée pour coller au design du jeu." },
+      { question: "Quel est le nom du plus grand set LEGO Minecraft sorti à ce jour (21137 - 2863 pièces en 2017) ?", options: ["La Grotte de la Montagne (The Mountain Cave)", "Le Village (The Village)", "La Bataille du Deep Dark", "Le Monument Océanique"], correct: 0, category: "Sets LEGO", explanation: "C'est un énorme set modulaire incluant un wagonnet motorisable et des briques lumineuses." },
+      { question: "Quel accessoire LEGO a été spécialement moulé pour représenter l'arme de base de Minecraft ?", options: ["L'Épée en pixel art (plate et carrée)", "Le Trident", "Le Bouclier", "L'Arbalète"], correct: 0, category: "Pièces LEGO", explanation: "L'épée Minecraft a un moule dédié très pixelisé, tout comme la pioche et la hache." },
+      { question: "Dans le set exclusif 'Le Village' (21128) sorti en 2016, quel mob géant terrifiant protège les villageois ?", options: ["Un Golem de Fer à construire", "Un Dragon de l'Ender", "Un Warden", "Un Ravageur"], correct: 0, category: "Sets LEGO", explanation: "Le Golem de Fer y est représenté par une grande construction articulée très fidèle au jeu." },
+      { question: "Quel concept LEGO Minecraft (Sets 21116, 21135, 21161) permet aux constructeurs de créer leurs propres modèles via des instructions multiples ?", options: ["La Boîte de Crafting (The Crafting Box)", "Le Creator 3-en-1 Minecraft", "L'Inventaire Créatif", "La Boîte Shulker"], correct: 0, category: "Gamme LEGO", explanation: "La Crafting Box offre des modules séparés (arbres, ponts, maisons) à combiner librement, comme dans le jeu en mode Créatif." },
+      { question: "Quel élément LEGO électronique est souvent inclus dans les plus gros sets Minecraft (comme le Portail du Nether ou la Grotte) ?", options: ["Une brique lumineuse (Light Brick)", "Un moteur Power Functions", "Une enceinte sonore", "Un capteur infrarouge"], correct: 0, category: "Pièces LEGO", explanation: "La brique lumineuse rouge ou orange est utilisée pour simuler le feu, la lave ou la redstone." },
+      { question: "En 2019, LEGO a lancé un sous-thème Minecraft composé uniquement de grandes figurines très détaillées. Quel était son nom ?", options: ["BigFigs", "Maxi-Mobs", "Minecraft Buildable Figures", "Bionicle Minecraft"], correct: 0, category: "Gamme LEGO", explanation: "Les sets BigFigs mettaient en scène Steve, Alex, le Squelette et le Creeper à une grande échelle articulée." },
+      { question: "Dans les sets LEGO Minecraft récents, comment les plaques de base (Grass, Sand, Stone) sont-elles reliées entre elles de manière modulaire ?", options: ["Avec des briques ou plates 2x4 par en-dessous / sur le côté", "Avec des aimants", "Par un système de rail", "Elles ne peuvent pas être reliées"], correct: 0, category: "Technique LEGO", explanation: "Le système modulaire utilise souvent des plates pour connecter rapidement les 'chunks' de terrain." },
+      { question: "Lequel de ces Mobs HOSTILES n'a jamais été représenté en LEGO ?", options: ["Tous ces mobs ont déjà été faits", "L'Illusionniste (Illusioner)", "Le Ghast", "L'Ancien Gardien (Elder Guardian)"], correct: 0, category: "Sets LEGO", explanation: "Le Ghast, l'Ancien Gardien et même l'Illusioner (dans certains livres/polybags) ont tous eu une version brique !" },
+      { question: "Quel célèbre boss de dimension a eu droit à plusieurs versions en set LEGO (21117 et 21151) ?", options: ["Le Dragon de l'Ender", "Le Wither", "Le Warden", "L'Éponge Géante"], correct: 0, category: "Sets LEGO", explanation: "Le Dragon de l'Ender est un classique, avec ses ailes noires articulées et les piliers d'obsidienne." },
+      { question: "Comment la 'Redstone' (poudre rouge) est-elle généralement représentée sur les plaques des sets LEGO ?", options: ["Des tiles 1x1 rouges plates", "Une ficelle rouge", "Du colorant rouge", "Il n'y en a jamais en LEGO"], correct: 0, category: "Design LEGO", explanation: "De simples petites tiles ou plates 1x1 rouges simulent le tracé de ce fil électrique in-game." },
+      { question: "Quelle caractéristique physique le moule de la tête du Creeper LEGO a-t-il pour le différencier de Steve ?", options: ["C'est un cube classique", "Il a des oreilles", "Il est rond", "Il est asymétrique"], correct: 0, category: "Design LEGO", explanation: "La tête du Creeper LEGO est un cube standard (avec le motif imprimé), identique au format de Steve ou des Zombies." },
+      { question: "Dans le set 'La Forteresse du Nether' (21122), de quoi est principalement composé le château ?", options: ["Briques rouges sombres (Dark Red) pour la Brique du Nether", "Briques noires pour l'Obsidienne", "Briques grises pour la Roche", "Briques jaunes pour la Glowstone"], correct: 0, category: "Design LEGO", explanation: "Le Dark Red simule parfaitement les fameuses briques du Nether du jeu." },
+      { question: "Quel Mob passif du jeu, très apprécié, est souvent représenté en briques avec un corps rose et une tête cubique tampographiée ?", options: ["Le Cochon", "Le Mouton", "La Vache Champignon", "Le Cheval"], correct: 0, category: "Mobs", explanation: "Le cochon est emblématique (avec ou sans selle) et souvent le premier animal qu'on croise dans les petits sets." },
+      { question: "En 2021, un immense set 'Moderne' de 909 pièces (21174) représentait une habitation dans la canopée. Son nom ?", options: ["La Cabane dans l'Arbre Moderne", "L'Arbre Géant", "La Base de la Jungle", "Le Manoir de la Forêt"], correct: 0, category: "Sets LEGO", explanation: "The Modern Treehouse, modulable et très haute, avec un skin de joueur en panda." },
+      { question: "Pour représenter la lave, LEGO utilise beaucoup une couleur spécifique transparente. Laquelle ?", options: ["Trans-Orange (Orange transparent)", "Trans-Red (Rouge transparent)", "Trans-Yellow (Jaune transparent)", "Des briques opaques orange"], correct: 0, category: "Pièces LEGO", explanation: "Le 'Trans-Orange' est omniprésent dans les sets Nether et Grottes pour donner cet effet de roche en fusion." },
+
+      // RÈGLES ET MÉCANIQUES DU JEU MINECRAFT (21-40)
+      { question: "Dans le jeu vidéo Minecraft, combien de planches de bois obtient-on à partir d'un seul bloc de bois brut (bûche) ?", options: ["4", "2", "6", "1"], correct: 0, category: "Crafting Jeu", explanation: "1 Bûche = 4 Planches (Planks), la base absolue de la survie !" },
+      { question: "Combien de blocs d'Obsidienne au strict MINIMUM faut-il pour allumer un portail du Nether fonctionnel ?", options: ["10 (sans les coins)", "14", "12", "8"], correct: 0, category: "Mécaniques de Jeu", explanation: "14 pour un portail plein, mais on peut économiser les 4 coins, ce qui fait 10 blocs minimum." },
+      { question: "Avec quel matériau MINIMUM doit-on fabriquer sa pioche pour pouvoir miner du Diamant ?", options: ["Le Fer", "La Pierre", "Le Bois", "L'Or"], correct: 0, category: "Règles du Jeu", explanation: "Miner du diamant avec une pioche en pierre ou en or détruira le bloc sans rien looter !" },
+      { question: "À quelle couche (Y) était-il historiquement le plus conseillé de miner pour trouver du diamant (avant la mise à jour Caves & Cliffs) ?", options: ["Y = 11 ou 12", "Y = 50", "Y = -60", "Y = 25"], correct: 0, category: "Technique Jeu", explanation: "Historiquement (versions 1.0 à 1.17), la couche 11 était parfaite car elle évitait de tomber directement dans les lacs de lave générés à la couche 10." },
+      { question: "Quel minerai est nécessaire pour fabriquer des circuits électriques, des pistons et des portes automatisées ?", options: ["La Redstone", "Le Lapis Lazuli", "Le Cuivre", "L'Émeraude"], correct: 0, category: "Règles du Jeu", explanation: "La Redstone est la mécanique d'ingénierie et d'automatisation de Minecraft." },
+      { question: "Comment fabrique-t-on de la TNT dans la table de craft ?", options: ["5 Poudres à canon et 4 Sables", "9 Poudres à canon", "4 Poudres à canon, 4 Sables et 1 Allume-feu", "1 Poudre à canon et 8 Blocs de Terre"], correct: 0, category: "Crafting Jeu", explanation: "Le motif est une croix (X) avec la poudre et les espaces vides remplis de blocs de sable." },
+      { question: "Qu'utilise-t-on sur la Table d'Enchantement, en plus des niveaux d'XP, pour enchanter ses armes depuis la version 1.8 ?", options: ["Du Lapis Lazuli", "De la Redstone", "De l'Or", "Du Diamant"], correct: 0, category: "Mécaniques de Jeu", explanation: "Le Lapis, longtemps inutile, est devenu obligatoire pour valider un enchantement." },
+      { question: "Que se passe-t-il si un joueur essaie de dormir dans un Lit dans la dimension du Nether ?", options: ["Le lit explose violemment (plus fort qu'une TNT)", "Rien, le joueur ne peut pas cliquer", "Le joueur dort mais se réveille en feu", "Le joueur se téléporte dans l'End"], correct: 0, category: "Pièges du Jeu", explanation: "Une mécanique mortelle très connue : l'explosion intentionnelle du lit dans le Nether et l'End." },
+      { question: "Quel objet sert à allumer un portail du Nether ?", options: ["Un Briquet (Silex et Acier)", "Une Torche", "Un Seau de Lave", "Une Boule de Feu"], correct: 0, category: "Règles du Jeu", explanation: "Le Flint and Steel (Silex + Lingot de Fer) met le feu au cadre d'obsidienne." },
+      { question: "Si l'on verse un seau d'eau SUR une source de lave, quel bloc se crée ?", options: ["De l'Obsidienne", "De la Cobblestone (Pierre taillée)", "De la Pierre (Stone lisse)", "Du Charbon"], correct: 0, category: "Mécaniques de Jeu", explanation: "L'eau sur la *source* de lave donne de l'obsidienne. L'eau sur la lave *coulante* donne de la Cobblestone." },
+      { question: "Quelle est la durabilité d'une Épée en Or par rapport à une Épée en Fer ?", options: ["L'Épée en Or se casse beaucoup plus vite (très fragile)", "L'Épée en Or est indestructible", "Elles ont la même durabilité", "L'Or est légèrement plus résistant"], correct: 0, category: "Mécaniques de Jeu", explanation: "Les outils en Or minent très vite et s'enchantent bien, mais ont une durabilité ridicule (32 utilisations)." },
+      { question: "Que faut-il réunir pour fabriquer l'Œil de l'Ender permettant de trouver le Stronghold (Forteresse de l'End) ?", options: ["1 Perle de l'Ender + 1 Poudre de Blaze", "1 Perle de l'Ender + 1 Larme de Ghast", "1 Œil d'Araignée + 1 Perle de l'Ender", "1 Diamant + 1 Perle de l'Ender"], correct: 0, category: "Crafting Jeu", explanation: "Il faut tuer des Endermen pour les perles, et aller dans le Nether tuer des Blazes pour la poudre." },
+      { question: "Combien d'Œufs le Dragon de l'Ender lâche-t-il à sa mort la première fois ?", options: ["Un seul (C'est un trophée unique)", "Zéro, il lâche une Étoile du Nether", "Trois", "Douze (Pour le portail de retour)"], correct: 0, category: "Lore Jeu", explanation: "Il lâche un seul œuf noir au sommet du portail de retour en bédrock." },
+      { question: "Que faut-il utiliser pour 'apprivoiser' un Loup sauvage dans le jeu ?", options: ["Des Os", "De la Viande Crue", "Du Poisson", "Une Laisse"], correct: 0, category: "Mécaniques de Jeu", explanation: "En lui donnant des os (lootés sur les squelettes), des cœurs apparaissent et un collier rouge se forme." },
+      { question: "Dans le jeu, comment fabrique-t-on des Cisailles (Shears) pour tondre les moutons ?", options: ["2 Lingots de fer en diagonale", "3 Lingots de fer en V", "2 Pierres et 1 Bâton", "1 Lingot de fer et 1 Bâton"], correct: 0, category: "Crafting Jeu", explanation: "Une recette très économique : seulement 2 lingots de fer." },
+      { question: "Quelle est l'utilité principale du bloc 'Éponge' (Sponge) ?", options: ["Absorber une grande quantité d'eau autour de lui", "Nettoyer les armures", "Rebondir plus haut que les blocs de Slime", "Il ne sert à rien, c'est juste décoratif"], correct: 0, category: "Règles du Jeu", explanation: "On les trouve dans les Monuments Océaniques et elles assèchent de grandes zones d'eau. Il faut les cuire pour les réutiliser." },
+      { question: "Comment appelle-t-on le concept mécanique de Minecraft qui empêche le joueur de miner ou détruire le dernier bloc de la carte, le fond du monde ?", options: ["La Bedrock (Roche de fond)", "L'Obsidienne Inversée", "La Barrière Invisible", "Le Vide (The Void)"], correct: 0, category: "Univers Jeu", explanation: "La Bedrock est incassable en survie sans utiliser de bugs (glitches)." },
+      { question: "Depuis la 1.14 (Village & Pillage), que permet le Métier à Tisser (Loom) ?", options: ["Appliquer des motifs très facilement sur des Bannières", "Réparer des arcs", "Faire des tapis volants", "Fabriquer des lits de couleur"], correct: 0, category: "Crafting Jeu", explanation: "Il a simplifié et révolutionné la création de bannières décoratives." },
+      { question: "Pour crafter une Enclume (Anvil), que vous faut-il en grande quantité ?", options: ["3 Blocs de fer (27 lingots) + 4 Lingots de fer", "31 Pierres taillées", "De l'Obsidienne lourde", "Du Plomb"], correct: 0, category: "Crafting Jeu", explanation: "C'est l'un des objets les plus coûteux en fer du jeu au début d'une aventure (31 lingots au total)." },
+      { question: "Que faut-il manger pour se régénérer, obtenir de la Résistance, de l'Absorption et parfois de la Régénération rapide en cas de danger extrême ?", options: ["Une Pomme Dorée (Golden Apple) ou Pomme Dorée Enchantée", "Une Soupe Suspecte", "Un Gâteau entier", "Un Poisson-Globe"], correct: 0, category: "Mécaniques de Jeu", explanation: "La Pomme 'Cheat' (Enchantée, qu'on ne peut plus crafter, on la trouve dans des coffres) sauve la vie de bien des joueurs hardcore." },
+
+      // LES MOBS DE MINECRAFT (41-60)
+      { question: "Quelle est la particularité mortelle du Creeper ?", options: ["Il s'approche silencieusement et explose", "Il tire des flèches de poison", "Il vole la nuit", "Il détruit les coffres"], correct: 0, category: "Mobs", explanation: "Le fameux 'Sssss...' suivi de la destruction de votre maison fraîchement construite." },
+      { question: "Que se passe-t-il si un Creeper est frappé par la foudre ?", options: ["Il devient un Creeper Chargé (Bleu électrique) à l'explosion dévastatrice", "Il meurt instantanément", "Il se transforme en Zombie", "Il devient pacifique"], correct: 0, category: "Mobs", explanation: "Le Creeper Chargé a une aura bleue et son explosion est capable de tuer un joueur en armure full diamant." },
+      { question: "Quel Mob de grande taille (3 blocs) peut se téléporter, craint l'eau et déplace des blocs ?", options: ["L'Enderman", "L'Iron Golem", "Le Wither Skeleton", "Le Warden"], correct: 0, category: "Mobs", explanation: "Inspiré du Slenderman, l'Enderman pousse des cris étranges (qui sont des mots humains à l'envers) et fuit la pluie." },
+      { question: "Quel Mob ennemi crache des boules de feu depuis les airs dans le Nether tout en pleurant ?", options: ["Le Ghast", "Le Blaze", "Le Phantom", "L'Ender Dragon"], correct: 0, category: "Mobs", explanation: "Le Ghast ressemble à un gros cube blanc fantomatique avec des tentacules." },
+      { question: "Quelle monnaie (Objet d'échange) est utilisée exclusivement par les Villageois ?", options: ["L'Émeraude", "Le Diamant", "L'Or", "La Pépite de fer"], correct: 0, category: "Mobs", explanation: "L'émeraude est le cœur de l'économie de Minecraft pour acheter des livres enchantés, de la nourriture ou des armures." },
+      { question: "Si on reste plusieurs nuits (au moins 3 jours en jeu) sans dormir, quel Mob hostile volant apparaît dans le ciel nocturne ?", options: ["Le Phantom", "La Chauve-souris Vampirique", "Le Vex", "L'Esprit de la Nuit"], correct: 0, category: "Mobs", explanation: "Ajouté suite à un vote de la communauté, le Phantom plonge pour attaquer les joueurs fatigués." },
+      { question: "Quel est l'animal de compagnie que l'on trouve dans les jungles et qui fait fuir les Creepers ?", options: ["L'Ocelot / Le Chat", "Le Loup", "Le Perroquet", "Le Singe"], correct: 0, category: "Mobs", explanation: "Les chats sont la terreur des Creepers, ce qui en fait les meilleurs gardes pour votre base !" },
+      { question: "Quel mob très puissant et aveugle a été ajouté dans la mise à jour 'Caves & Cliffs' et vit dans les Cités des Abîmes (Deep Dark) ?", options: ["Le Warden", "Le Sculk-Beast", "Le Minotaure des Cavernes", "Le Ravageur Obscur"], correct: 0, category: "Mobs", explanation: "Le Warden repère le joueur au son et aux vibrations. Il est conçu pour être fui, pas combattu." },
+      { question: "Que fait le Golem de Neige lorsque vous l'invoquez dans un biome Désert ou Nether ?", options: ["Il fond et meurt très rapidement", "Il attaque les cochons", "Il se transforme en Golem de Sable", "Il devient immortel"], correct: 0, category: "Mobs", explanation: "Pauvre bonhomme de neige, il ne supporte pas la chaleur et prend des dégâts constants." },
+      { question: "Quel mob, apparaissant souvent près des monuments océaniques, inflige 'Fatigue de Minage' au joueur ?", options: ["L'Ancien Gardien (Elder Guardian)", "Le Drowned (Noyé)", "Le Calmar Luisant", "Le Serpent de Mer"], correct: 0, category: "Mobs", explanation: "L'Ancien Gardien apparaît parfois en fantôme sur votre écran avec un son terrifiant." },
+      { question: "Dans un raid sur un village, quel énorme monstre en forme de taureau les Pillards montent-ils parfois ?", options: ["Le Ravageur (Ravager)", "Le Rhino-Block", "Le Golem Corrompu", "La Bête de Siège"], correct: 0, category: "Mobs", explanation: "Le Ravageur détruit les plantations et encaisse énormément de dégâts." },
+      { question: "Qu'est-ce qu'un 'Jockey Araignée' (Spider Jockey) ?", options: ["Un Squelette qui chevauche une Araignée", "Une petite araignée sur une grande", "Un zombie avec un casque en toile", "Un Boss exclusif"], correct: 0, category: "Mobs", explanation: "C'est un spawn rare combinant la vitesse et les sauts de l'araignée avec les tirs à distance du squelette." },
+      { question: "Quel mob neutre du Nether se transforme en sa version 'Zombifiée' s'il passe par un portail vers le monde normal ?", options: ["Le Piglin", "Le Hoglin", "Le Blaze", "Le Piglin et le Hoglin"], correct: 0, category: "Mobs", explanation: "Les Piglins (hommes-cochons) et les Hoglins (phacochères) 'zombifient' hors du Nether car ils ne supportent pas l'air de l'Overworld." },
+      { question: "Comment apaiser un Piglin normal dans le Nether pour qu'il ne vous attaque pas ?", options: ["En portant au moins une pièce d'armure en Or", "En lui jetant du pain", "En s'accroupissant (Sneak)", "En portant un masque de Creeper"], correct: 0, category: "Mobs", explanation: "Les Piglins adorent l'or. Si vous en portez, ils vous considèrent comme l'un des leurs... sauf si vous ouvrez un coffre devant eux !" },
+      { question: "Quel petit mob volant dans le Nether, souvent trouvé dans les forteresses, tourne autour d'un spawner et lance du feu ?", options: ["Le Blaze", "Le Ghastling", "Le Vex de Feu", "Le Magma Cube"], correct: 0, category: "Mobs", explanation: "Ils dropent les précieux Bâtons de Blaze nécessaires pour finir le jeu." },
+      { question: "Quel mob aquatique peut être mis dans un seau d'eau et est connu pour sa capacité de régénération exceptionnelle (et mignonne) ?", options: ["L'Axolotl", "Le Dauphin", "Le Poisson-Globe", "Le Calmar"], correct: 0, category: "Mobs", explanation: "L'Axolotl, ajouté récemment, attaque les Noyés et les Gardiens pour défendre le joueur." },
+      { question: "Quel insecte géant trouve-t-on dans les mines abandonnées sous terre, caractérisé par sa petite taille et son venin ?", options: ["L'Araignée Bleue venimeuse (Cave Spider)", "Le Scorpion de Roche", "Le Silverfish", "La Fourmi d'Obsidienne"], correct: 0, category: "Mobs", explanation: "Plus petite et plus mortelle que l'araignée classique à cause du poison." },
+      { question: "Que cache un bloc de pierre infesté (souvent près du portail de l'End) lorsqu'on le mine ?", options: ["Un Poisson d'argent (Silverfish)", "De l'XP empoisonnée", "Rien, c'est juste plus long à miner", "Un piège explosif"], correct: 0, category: "Mobs", explanation: "Le Silverfish sort du bloc et attaque le joueur, souvent en réveillant ses congénères." },
+      { question: "Le Shulker, ce mob qui tire des projectiles à tête chercheuse, se trouve dans quelle dimension ?", options: ["La Ville de l'End (End City)", "Le Nether", "Dans le Vide", "Les Océans profonds"], correct: 0, category: "Mobs", explanation: "Ses projectiles vous font léviter, avec un grand risque de mort par chute." },
+      { question: "Quel golem est souvent invoqué intentionnellement par les joueurs par erreur en construisant un 'T' avec du Sable des Âmes et 3 crânes noirs ?", options: ["Le Wither (Boss)", "Le Dieu de l'Ombre", "L'Esprit du Nether", "Herobrine"], correct: 0, category: "Mobs", explanation: "Le Wither est le second Boss du jeu, il détruit tout sur son passage avec des têtes explosives." },
+
+      // BIOMES ET DIMENSIONS (61-80)
+      { question: "Dans Minecraft, il y a exactement trois dimensions majeures. Lesquelles ?", options: ["Overworld (Surface), Nether, L'End", "Surface, Ciel, Enfer", "Village, Donjon, Ender", "L'Alpha, La Bêta, La Release"], correct: 0, category: "Dimensions", explanation: "La Surface (Le monde normal), Le Nether (Le monde hostile enflammé) et L'End (La fin du jeu)." },
+      { question: "Quel bloc tapisse tout le sol et le plafond du Nether en haut et en bas de la carte ?", options: ["La Bedrock (Roche de fond)", "L'Obsidienne", "La Netherrack", "La Magma Stone"], correct: 0, category: "Univers", explanation: "La Bedrock empêche de sortir de la zone jouable, bien que des joueurs aient trouvé le moyen de monter SUR le plafond." },
+      { question: "Dans quel biome ultra rare trouve-t-on de la 'Mycélium' (herbe violette/grise) et des Vaches Champignons (Mooshrooms) ?", options: ["L'Île Champignon (Mushroom Fields)", "La Forêt Sombre (Dark Oak)", "La Jungle", "Le Marais"], correct: 0, category: "Biomes", explanation: "C'est un biome très recherché car aucun mob hostile n'y spawn naturellement de nuit." },
+      { question: "Quel biome est réputé pour avoir de la neige, des loups, des igloos et de très grands sapins (Spruce) ?", options: ["La Taïga", "La Toundra Glaciale", "Les Pics de Glace", "Les Plaines Enneigées"], correct: 0, category: "Biomes", explanation: "La Taïga (et ses variantes) est le domaine des grands conifères." },
+      { question: "Dans les 'Mesa' (Badlands), quel matériau colore les montagnes en couches successives ?", options: ["La Terre Cuite (Terracotta) colorée", "Du Sable Rouge", "De la Lave séchée", "Du Cuivre oxydé"], correct: 0, category: "Biomes", explanation: "La Terre Cuite de multiples couleurs forme le paysage inspiré des canyons américains (comme le Grand Canyon)." },
+      { question: "Quelle grande structure naturelle apparaît dans les biomes Jungle et est remplie de pièges (flèches, leviers) ?", options: ["Le Temple de la Jungle", "Le Donjon Squelette", "La Cabane de Sorcière", "La Cité d'Or"], correct: 0, category: "Génération", explanation: "Fait de pierre moussue, il abrite deux coffres... si on survit aux pièges à fil !" },
+      { question: "Où trouve-t-on le biome des 'Pics de Glace' (Ice Spikes) très prisé des constructeurs ?", options: ["Dans les plaines enneigées (Toundra)", "Dans le Nether", "Au sommet des montagnes", "Sur l'océan gelé"], correct: 0, category: "Biomes", explanation: "Ce biome spectaculaire est rempli de colonnes de glace pilée (Packed Ice)." },
+      { question: "Que trouve-t-on presque toujours caché sous un village, au fond d'un puits ou très profond dans la pierre ?", options: ["Il n'y a pas de règle stricte, mais parfois le Stronghold s'y génère dans certaines éditions", "Le Temple de Notch", "La salle au Trésor", "La Mine de Diamant"], correct: 0, category: "Génération", explanation: "Historiquement (et surtout sur les anciennes éditions), le Stronghold a très souvent été codé pour spawn directement sous des villages." },
+      { question: "Comment s'appelle le biome ajouté dans la 1.19, entièrement souterrain et infesté par la 'corruption' de Sculk noir et bleu cyan ?", options: ["Le Deep Dark (Abîmes)", "La Caverne des Ombres", "Le Nether Souterrain", "Le Vide Creux"], correct: 0, category: "Biomes", explanation: "Le Deep Dark est silencieux, n'a aucun spawn de monstre classique, mais abrite l'effrayant Warden." },
+      { question: "Dans le Nether, depuis la mise à jour 1.16, on trouve une forêt bleue très étrange. Quel est son nom ?", options: ["La Forêt Carmin (Warped Forest) [Note: Warped est cyan/bleu]", "La Forêt Écarlate (Crimson Forest)", "La Vallée des Âmes", "Le Delta de Basalte"], correct: 0, category: "Biomes", explanation: "Warped Forest (Forêt Carmin / Biscornue). C'est le seul endroit 'sûr' du Nether car les Endermen y dominent, sans Hoglins hostiles." },
+      { question: "Quel bois récolte-t-on dans la Forêt Sombre (Dark Forest) reconnaissable à ses arbres très épais (2x2) ?", options: ["Le Chêne Sombre (Dark Oak)", "L'Acacia", "L'Acajou", "Le Bouleau"], correct: 0, category: "Biomes", explanation: "Le Dark Oak, un bois brun très foncé prisé pour la décoration." },
+      { question: "Dans ce même biome (Forêt Sombre), quelle immense structure en bois abritant Vex, Évocateurs et Pillards peut-on parfois trouver ?", options: ["Le Manoir de la Forêt (Woodland Mansion)", "L'Avant-poste des Pillards", "Le Château d'Illusion", "La Cabane de la Sorcière"], correct: 0, category: "Génération", explanation: "C'est l'un des plus grands donjons du jeu, renfermant le fameux Totem d'Immortalité." },
+      { question: "Quelle structure sous-marine gigantesque, faite de blocs Prismarine (bleu/vert) abrite des coffres d'or ?", options: ["Le Monument Océanique", "Le Temple de l'Eau", "L'Épave engloutie", "Atlantis"], correct: 0, category: "Génération", explanation: "Gardé par les Gardiens et trois Anciens Gardiens, c'est l'un des lieux les plus durs à piller sans équipement." },
+      { question: "Quelle petite structure trouve-t-on isolée dans les biomes Marais, habitée par un seul mob hostile et un chat noir ?", options: ["La Cabane de la Sorcière (Witch Hut)", "La Tour d'Observation", "La Maison Abandonnée", "Le Labo d'Alchimie"], correct: 0, category: "Génération", explanation: "La cabane est perchée sur des pilotis et permet aux joueurs avancés de créer des 'Fermes à Sorcières' pour la redstone." },
+      { question: "Dans les Cavernes Luxuriantes (Lush Caves), quel bloc suspendu au plafond éclaire la zone avec des baies jaunes ?", options: ["La Baie Lumineuse (Glow Berry)", "La Liane Magique", "La Fleur de Spore", "Le Mousse-Éclair"], correct: 0, category: "Biomes", explanation: "Les Cavernes luxuriantes (ajoutées en 1.18) sont belles, vertes, et illuminées par les Glow Berries." },
+      { question: "Quel matériau précieux (qui permet de faire les armures les plus fortes, meilleures que le diamant) ne se trouve QUE dans le Nether ?", options: ["La Netherite (Débris Antiques)", "Le Rubis", "L'Améthyste Noire", "L'Or Infernal"], correct: 0, category: "Ressources", explanation: "Il faut fondre des Débris Antiques trouvés très bas dans le Nether, puis les combiner avec de l'or, puis appliquer le tout sur une pièce en diamant avec une table de forgeron !" },
+      { question: "Dans la Cité de l'End (End City), avec quel bloc de couleur rose/violette l'architecture est-elle construite ?", options: ["Le bloc de Purpur", "Le bloc de Corail de l'End", "L'Améthyste taillée", "La Pierre de l'End teintée"], correct: 0, category: "Génération", explanation: "Les blocs de Purpur, fabriqués à partir des fruits de Chorus (Chorus Fruit)." },
+      { question: "Quel moyen de transport volant (que l'on équipe sur le torse) trouve-t-on dans les Bateaux Volants de l'End ?", options: ["Les Élytres (Elytra)", "Le Jetpack", "La Cape de Vol", "Les Ailes de Dragon"], correct: 0, category: "Objets Jeu", explanation: "Couplé avec des fusées d'artifice, c'est le meilleur moyen de se déplacer très vite dans le ciel." },
+      { question: "Quel phénomène naturel 'météo' de Minecraft permet l'apparition des Squelettes sur des Chevaux Squelettes (Cavaliers de l'Apocalypse) ?", options: ["Un Orage (Thunderstorm) avec éclairs", "Une Éclipse de Soleil", "Une Tempête de Neige", "La Pleine Lune Rouge"], correct: 0, category: "Événements", explanation: "Quand la foudre frappe un 'cheval piège', il se multiplie en 4 cavaliers squelettes équipés d'arcs enchantés !" },
+      { question: "Si l'on trouve un coffre enfoui (Buried Treasure) grâce à une carte marine, que contient-il toujours comme trésor extrêmement rare ?", options: ["Un Cœur de la Mer (Heart of the Sea)", "Un Trident", "Un Livre Mending (Raccommodage)", "Une Pomme de Notch"], correct: 0, category: "Trésors", explanation: "Combiné avec des coquilles de Nautilus, il permet de construire un Conduit (Conduit) pour respirer sous l'eau indéfiniment." },
+
+      // LORE MINECRAFT, CULTURE POP & MISC (81-100)
+      { question: "Quel développeur suédois, surnommé 'Notch', est le créateur original de Minecraft en 2009 ?", options: ["Markus Persson", "Jens Bergensten (Jeb)", "Carl Manneh", "Hideo Kojima"], correct: 0, category: "Culture/Histoire", explanation: "Markus Persson a codé les bases du jeu en Java lors de ses week-ends en 2009 avant de fonder le studio Mojang." },
+      { question: "En 2014, quelle immense entreprise technologique américaine a racheté Mojang et la licence Minecraft pour 2,5 milliards de dollars ?", options: ["Microsoft", "Google", "Apple", "Sony"], correct: 0, category: "Culture/Histoire", explanation: "Microsoft a acquis la franchise et a grandement étendu le jeu (Bedrock Edition, Spin-offs)." },
+      { question: "Quel mythe terrifiant de la communauté (creepypasta) décrit un joueur avec le skin de base et des yeux blancs brillants ?", options: ["Herobrine", "Entity 303", "Le Mineur Mort", "Null"], correct: 0, category: "Mythes", explanation: "Herobrine n'a jamais existé dans le code du jeu (sauf via des mods), mais Mojang s'amusait à écrire 'Removed Herobrine' dans chaque mise à jour." },
+      { question: "Qui est le compositeur historique de l'ambiance musicale douce, mélancolique (et parfois angoissante en grotte) de Minecraft ?", options: ["C418 (Daniel Rosenfeld)", "Lena Raine (elle a rejoint après)", "Hans Zimmer", "Jeremy Soule"], correct: 0, category: "Audio", explanation: "C418 a créé les bandes sons Volume Alpha et Volume Beta qui ont défini l'identité de Minecraft." },
+      { question: "Quel nom porte la version 'originale' de Minecraft sur PC, reconnue pour ses mods et ses serveurs historiques ?", options: ["La Java Edition", "La Bedrock Edition", "La Windows 10 Edition", "L'Alpha Edition"], correct: 0, category: "Technique", explanation: "Minecraft Java Edition reste la version préférée des créateurs de mods et des joueurs PC hardcore." },
+      { question: "La version 'Bedrock Edition' (Consoles, Mobiles, Windows) est codée dans un langage différent pour de meilleures performances. Lequel ?", options: ["C++", "Java", "Python", "HTML5"], correct: 0, category: "Technique", explanation: "Le moteur 'Bedrock' en C++ permet le Cross-Play (jouer ensemble sur Switch, Mobile et PC)." },
+      { question: "Que signifie le nom du studio 'Mojang' en suédois ?", options: ["Gadget / Machin", "Créateur de Blocs", "Monde Cubique", "Élan (l'animal)"], correct: 0, category: "Culture/Histoire", explanation: "C'est un mot d'argot suédois qui désigne un objet dont on a oublié le nom ou un gadget." },
+      { question: "Quel poisson, s'il est consommé cru par le joueur dans Minecraft, lui inflige Faim, Nausée et Poison simultanément ?", options: ["Le Poisson-Globe (Pufferfish)", "Le Poisson-Globe (et non le Saumon)", "Le Poisson Tropical", "La Morue"], correct: 0, category: "Objets", explanation: "Il sert principalement de composant alchimique pour faire des Potions de Respiration Aquatique." },
+      { question: "Dans le tout premier mode de jeu public (Classic/Pre-Classic), quels étaient les deux seuls blocs disponibles ?", options: ["Terre (Grass) et Roche (Cobblestone)", "Bois et Pierre", "Feuilles et Eau", "Sable et Terre"], correct: 0, category: "Histoire Jeu", explanation: "Au tout début, le jeu servait juste à casser ou poser des blocs de terre et de pavé." },
+      { question: "Quelle est l'origine (vraie anecdote de développement) de la forme du Creeper ?", options: ["Notch s'est trompé dans la taille de l'axe X et Y en essayant de coder un Cochon", "Il voulait faire un serpent debout", "Il voulait modéliser un buisson qui marche", "C'était le croquis de son enfant"], correct: 0, category: "Anecdote de Code", explanation: "En intervertissant la longueur et la hauteur d'un cochon, il a obtenu cette forme verticale. Il l'a peinte en vert et le Creeper est né !" },
+      { question: "Comment s'appelle l'enchantement suprême qui permet à un outil de se réparer tout seul en absorbant de l'expérience (XP) ?", options: ["Raccommodage (Mending)", "Solidité (Unbreaking)", "Régénération", "Éternité"], correct: 0, category: "Mécaniques de Jeu", explanation: "Le Mending est le graal de Minecraft. S'il est combiné à Solidité III, l'outil est virtuellement incassable." },
+      { question: "Quel spin-off de Minecraft sorti en 2020 est un jeu d'action-RPG vu du dessus (Dungeon Crawler), qui a aussi eu 2 sets LEGO (21163, 21176) ?", options: ["Minecraft Dungeons", "Minecraft Story Mode", "Minecraft Earth", "Minecraft Legends"], correct: 0, category: "Jeux Vidéo", explanation: "Minecraft Dungeons est très orienté combat avec des boss comme la Monstruosité de Redstone." },
+      { question: "L'arme ultime de Minecraft Dungeons, souvent représentée en LEGO Dungeons, est une épée orange flamboyante. Son nom ?", options: ["L'Épée du Soleil (Sun's Grace / Firebrand)", "La Lame Ardente / Dague de braise", "Le Claymore", "La Frappe-Lumière"], correct: 0, category: "Lore", explanation: "C'est une des armes uniques souvent loots dans le jeu." },
+      { question: "Quelle créature, emblème de LEGO, est absente du jeu de base Minecraft mais existe dans un jeu LEGO rival (LEGO Worlds) ?", options: ["Une Minifigurine", "Un Dinosaure", "Une Voiture", "Rien, tout est moddable"], correct: 0, category: "Culture/Histoire", explanation: "Bien sûr, les Minifigurines vivent dans l'univers LEGO (et LEGO Worlds), pas dans le code de Mojang (bien que de nombreux mods existent)." },
+      { question: "Quel est le nom de l'événement annuel officiel (live stream) où les joueurs votent pour le prochain Mob ajouté au jeu ?", options: ["Minecraft Live (Anciennement Minecon)", "Block-Fest", "Mojang Direct", "L'Assemblée de l'Ender"], correct: 0, category: "Événements", explanation: "Chaque année, la communauté se déchire pour élire le Glow Squid, le Phantom ou l'Allay !" },
+      { question: "Quel Mob sympathique et bleu, gagnant du vote de 2021, transporte des objets pour le joueur et aime la musique ?", options: ["L'Allay", "Le Vex", "La Fée des Mines", "L'Oiseau-Bleu"], correct: 0, category: "Mobs", explanation: "Si vous lui donnez un objet et jouez d'un bloc musical, il ira chercher tous les objets identiques pour vous les ramener." },
+      { question: "Dans le menu principal du jeu, le titre 'MINECRAFT' a parfois une faute de frappe intentionnelle très rare (1 chance sur 10 000). Que lit-on ?", options: ["MINCERAFT", "MINECRACK", "MIND-CRAFT", "MAINCRAFT"], correct: 0, category: "Easter Eggs", explanation: "Le C et le E sont inversés pour troller gentiment le joueur qui ouvre son jeu." },
+      { question: "Quel animal peut être équipé d'un coffre pour servir de mule de bât, en plus de l'Âne / la Mule ?", options: ["Le Lama (Llama)", "Le Cheval", "Le Cochon", "Le Chameau"], correct: 0, category: "Mobs", explanation: "Les lamas peuvent porter des coffres (et être décorés avec des tapis colorés)." },
+      { question: "Si l'on renomme un Mob 'Dinnerbone' ou 'Grumm' avec une étiquette (Name Tag), que lui arrive-t-il ?", options: ["Il se met à l'envers (tête en bas)", "Il danse sur place", "Il devient invisible", "Il grossit"], correct: 0, category: "Easter Eggs", explanation: "C'est un hommage au développeur Dinnerbone. Le mob marchera sur la tête !" },
+      { question: "Dans les 'Crédits de Fin' du jeu (le poème de l'End, très long), qui parle au joueur en texte défilant ?", options: ["Deux entités cosmiques qui débattent sur le rêve et la réalité du Joueur", "Notch", "Herobrine et Steve", "Le Dragon de l'Ender"], correct: 0, category: "Lore Jeu", explanation: "C'est un texte philosophique écrit par Julian Gough qui casse le quatrième mur sur la nature du jeu et de la vie." }
+    ];
+
+    /**
+     * MOTEUR AUDIO (STYLE MINECRAFT)
+     */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      // Orbe d'XP (Level Up)
+      playLevelUp() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine'; // Pur et aigu (XP)
+        
+        const now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        osc.frequency.setValueAtTime(1200, now + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(1800, now + 0.2);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
+
+      // Bruit grave / Prendre un dégât "Oof/Thud"
+      playThud() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'square'; // Plus rugueux, style pixel
+        const now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.4, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+
+      // Tic-tac bois sec
+      playClick() {
+        if (!this.enabled) return;
+        this.initCtx();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+    }
+
+    /**
+     * CONTRÔLEUR PRINCIPAL DE L'APPLICATION
+     */
+    class QuizApp {
+      constructor() {
+        this.questionsPool = [...INITIAL_QUESTIONS];
+        this.sound = new SoundEngine();
+
+        this.gameMode = 'solo';
+        this.activeQuestions = [];
+        this.currentIndex = 0;
+        this.totalQuestionsCount = 10;
+
+        this.soloScore = 0;
+        this.teamAScore = 0;
+        this.teamBScore = 0;
+        this.currentTurn = 'teamA';
+        
+        this.playerName = 'Steve';
+        this.teamAName = 'Les Creepers';
+        this.teamBName = "Les Endermen";
+        this.pendingMode = 'solo';
+
+        this.timerEnabled = true;
+        this.timerSeconds = 15;
+        this.timerInterval = null;
+        this.hasAnswered = false;
+        this.jokers = { solo: 1, teamA: 1, teamB: 1 };
+
+        this.initUI();
+      }
+
+      initUI() {
+        document.getElementById('poolCountText').innerText = this.questionsPool.length;
+      }
+
+      toggleSound() {
+        this.sound.enabled = !this.sound.enabled;
+        const iconOn = document.getElementById('soundIconOn');
+        const iconOff = document.getElementById('soundIconOff');
+        if (this.sound.enabled) {
+          iconOn.classList.remove('hidden');
+          iconOff.classList.add('hidden');
+          this.sound.playClick();
+        } else {
+          iconOn.classList.add('hidden');
+          iconOff.classList.remove('hidden');
+        }
+      }
+
+      showScreen(screenId) {
+        clearInterval(this.timerInterval);
+        document.getElementById('screen-welcome').classList.add('hidden');
+        document.getElementById('screen-quiz').classList.add('hidden');
+        document.getElementById('screen-results').classList.add('hidden');
+        document.getElementById('screen-leaderboard').classList.add('hidden');
+
+        document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+      }
+
+      openNameSetup(mode) {
+        this.pendingMode = mode;
+        document.getElementById('nameSetupModal').classList.remove('hidden');
+        
+        if (mode === 'solo') {
+          document.getElementById('soloNameInput').classList.remove('hidden');
+          document.getElementById('duelNameInputs').classList.add('hidden');
+          document.getElementById('participantName').required = true;
+          document.getElementById('team1Name').required = false;
+          document.getElementById('team2Name').required = false;
+          setTimeout(() => document.getElementById('participantName').focus(), 50);
+        } else {
+          document.getElementById('soloNameInput').classList.add('hidden');
+          document.getElementById('duelNameInputs').classList.remove('hidden');
+          document.getElementById('participantName').required = false;
+          document.getElementById('team1Name').required = true;
+          document.getElementById('team2Name').required = true;
+          setTimeout(() => document.getElementById('team1Name').focus(), 50);
+        }
+      }
+
+      closeNameSetup() {
+        document.getElementById('nameSetupModal').classList.add('hidden');
+        document.getElementById('nameSetupForm').reset();
+      }
+
+      startWithNames(e) {
+        e.preventDefault();
+        if (this.pendingMode === 'solo') {
+          this.playerName = document.getElementById('participantName').value.trim() || 'Steve';
+        } else {
+          this.teamAName = document.getElementById('team1Name').value.trim() || 'Les Creepers';
+          this.teamBName = document.getElementById('team2Name').value.trim() || 'Les Endermen';
+        }
+        this.closeNameSetup();
+        this.setupGame(this.pendingMode);
+      }
+
+      setupGame(mode) {
+        this.sound.initCtx();
+        this.gameMode = mode;
+        this.timerEnabled = document.getElementById('timerEnabledCheck').checked;
+
+        this.totalQuestionsCount = 10;
+
+        // Shuffle questions
+        const shuffled = [...this.questionsPool].sort(() => 0.5 - Math.random());
+        const targetCount = Math.min(this.totalQuestionsCount, shuffled.length);
+        this.activeQuestions = shuffled.slice(0, targetCount);
+
+        this.currentIndex = 0;
+        this.soloScore = 0;
+        this.teamAScore = 0;
+        this.teamBScore = 0;
+        this.currentTurn = 'teamA';
+        this.jokers = { solo: 1, teamA: 1, teamB: 1 };
+
+        if (this.gameMode === 'duel') {
+          document.getElementById('duelHeaderWidget').classList.remove('hidden');
+          document.getElementById('soloHeaderWidget').classList.add('hidden');
+          document.getElementById('teamTurnIndicator').classList.remove('hidden');
+          document.getElementById('uiTeamAName').innerText = this.teamAName.toUpperCase();
+          document.getElementById('uiTeamBName').innerText = this.teamBName.toUpperCase();
+          this.updateDuelHeader();
+        } else {
+          document.getElementById('duelHeaderWidget').classList.add('hidden');
+          document.getElementById('soloHeaderWidget').classList.remove('hidden');
+          document.getElementById('teamTurnIndicator').classList.add('hidden');
+          document.getElementById('uiSoloName').innerText = this.playerName.toUpperCase();
+          document.getElementById('soloScore').innerText = '0';
+        }
+
+        const timerContainer = document.getElementById('timerContainer');
+        if (this.timerEnabled) {
+          timerContainer.classList.remove('hidden');
+        } else {
+          timerContainer.classList.add('hidden');
+        }
+
+        this.showScreen('quiz');
+        this.loadQuestion();
+      }
+
+      restartWithSameSettings() {
+        this.setupGame(this.gameMode);
+      }
+
+      updateDuelHeader() {
+        document.getElementById('teamAScore').innerText = this.teamAScore;
+        document.getElementById('teamBScore').innerText = this.teamBScore;
+
+        const teamABox = document.getElementById('teamAStatus');
+        const teamBBox = document.getElementById('teamBStatus');
+        const turnText = document.getElementById('teamTurnText');
+
+        if (this.currentTurn === 'teamA') {
+          teamABox.className = "px-3 py-1.5 mc-button transition-all bg-green-900 text-white border-green-500 scale-105";
+          teamBBox.className = "px-3 py-1.5 mc-button transition-all bg-stone-800 text-stone-500 scale-95 opacity-70";
+          turnText.innerHTML = `Au tour de : <span class="text-green-400 font-bold tracking-wide">${this.teamAName.toUpperCase()}</span>`;
+        } else {
+          teamBBox.className = "px-3 py-1.5 mc-button transition-all bg-purple-900 text-white border-purple-500 scale-105";
+          teamABox.className = "px-3 py-1.5 mc-button transition-all bg-stone-800 text-stone-500 scale-95 opacity-70";
+          turnText.innerHTML = `Au tour de : <span class="text-purple-400 font-bold tracking-wide">${this.teamBName.toUpperCase()}</span>`;
+        }
+      }
+
+      loadQuestion() {
+        this.hasAnswered = false;
+        clearInterval(this.timerInterval);
+
+        const q = this.activeQuestions[this.currentIndex];
+        document.getElementById('currentRoundBadge').innerText = `Q${this.currentIndex + 1}/${this.activeQuestions.length}`;
+        document.getElementById('categoryBadge').innerText = q.category || 'Monde Normal';
+
+        document.getElementById('questionText').innerText = q.question;
+        document.getElementById('feedbackContainer').classList.add('hidden');
+
+        const grid = document.getElementById('optionsGrid');
+        grid.innerHTML = '';
+
+        const choices = q.options.map((opt, idx) => ({
+          text: opt,
+          isCorrect: idx === q.correct
+        }));
+
+        choices.sort(() => 0.5 - Math.random());
+
+        const letters = ['A', 'B', 'C', 'D'];
+        choices.forEach((choice, i) => {
+          const btn = document.createElement('button');
+          btn.className = `mc-button w-full p-4 rounded-sm bg-stone-700 hover:bg-stone-600 text-left flex items-center gap-4 text-white focus:outline-none transition group`;
+          btn.innerHTML = `
+            <span class="w-10 h-10 bg-stone-900 flex items-center justify-center font-minecraft text-xl text-green-400 mc-button group-hover:bg-green-600 group-hover:text-white transition-colors shrink-0">
+              ${letters[i] || '•'}
+            </span>
+            <span class="text-sm md:text-base font-bold font-inter">${choice.text}</span>
+            <div class="option-icon opacity-0 transition-opacity ml-auto shrink-0"></div>
+          `;
+
+          btn.onclick = () => this.handleAnswer(choice.isCorrect, btn, choices);
+          grid.appendChild(btn);
+        });
+
+        // Mise à jour de l'état du bouton Joker
+        const currentEntity = this.gameMode === 'solo' ? 'solo' : this.currentTurn;
+        const jokerBtn = document.getElementById('jokerBtn');
+        if (this.jokers[currentEntity] > 0) {
+          jokerBtn.disabled = false;
+          jokerBtn.classList.remove('opacity-40', 'cursor-not-allowed', 'scale-95', 'grayscale');
+          jokerBtn.classList.add('hover:scale-105');
+        } else {
+          jokerBtn.disabled = true;
+          jokerBtn.classList.add('opacity-40', 'cursor-not-allowed', 'scale-95', 'grayscale');
+          jokerBtn.classList.remove('hover:scale-105');
+        }
+
+        if (this.timerEnabled) {
+          this.startTimer();
+        }
+      }
+
+      useJoker() {
+        if (this.hasAnswered) return;
+        
+        const currentEntity = this.gameMode === 'solo' ? 'solo' : this.currentTurn;
+        if (this.jokers[currentEntity] <= 0) return; 
+
+        // Consommer le Joker
+        this.jokers[currentEntity] = 0;
+        this.sound.playLevelUp(); // Son de potion
+
+        // Griser le bouton
+        const jokerBtn = document.getElementById('jokerBtn');
+        jokerBtn.classList.add('opacity-40', 'cursor-not-allowed', 'scale-95', 'grayscale');
+        jokerBtn.classList.remove('hover:scale-105');
+        jokerBtn.disabled = true;
+
+        // Trouver les mauvaises réponses
+        const q = this.activeQuestions[this.currentIndex];
+        const correctText = q.options[q.correct];
+        const buttons = Array.from(document.querySelectorAll('#optionsGrid button'));
+        
+        const wrongButtons = buttons.filter(btn => {
+          const text = btn.querySelector('.font-inter').innerText;
+          return text !== correctText;
+        });
+
+        // En désactiver 2 au hasard
+        wrongButtons.sort(() => 0.5 - Math.random());
+        const toDisable = wrongButtons.slice(0, 2);
+
+        toDisable.forEach(btn => {
+          btn.disabled = true;
+          btn.classList.add('opacity-20');
+          btn.classList.remove('hover:bg-stone-600');
+        });
+      }
+
+      startTimer() {
+        this.timerSeconds = 15;
+        const box = document.getElementById('timerBox');
+        box.innerText = this.timerSeconds;
+        box.className = "w-12 h-12 bg-stone-800 text-green-400 flex items-center justify-center text-3xl mc-button shadow-inner border-t-2 border-stone-900 border-l-2 border-stone-900";
+
+        this.timerInterval = setInterval(() => {
+          this.timerSeconds--;
+          box.innerText = this.timerSeconds;
+
+          if (this.timerSeconds <= 5) {
+            box.className = "w-12 h-12 bg-red-900 text-red-400 flex items-center justify-center text-3xl mc-button animate-danger-pulse shadow-inner border-t-2 border-red-950";
+            this.sound.playClick();
+          }
+
+          if (this.timerSeconds <= 0) {
+            clearInterval(this.timerInterval);
+            this.handleTimeout();
+          }
+        }, 1000);
+      }
+
+      handleTimeout() {
+        if (this.hasAnswered) return;
+        this.hasAnswered = true;
+        this.sound.playThud();
+        this.revealAnswers(null, false, true);
+      }
+
+      handleAnswer(isCorrect, clickedBtn, choices) {
+        if (this.hasAnswered) return;
+        this.hasAnswered = true;
+        clearInterval(this.timerInterval);
+
+        if (isCorrect) {
+          this.sound.playLevelUp();
+          if (typeof confetti === 'function') {
+            confetti({
+              particleCount: 60,
+              spread: 60,
+              colors: ['#4ade80', '#22c55e', '#a855f7', '#3b82f6'],
+              origin: { y: 0.65 },
+              shapes: ['square'] // Carrés style Minecraft
+            });
+          }
+
+          if (this.gameMode === 'solo') {
+            this.soloScore++;
+            document.getElementById('soloScore').innerText = this.soloScore;
+          } else {
+            if (this.currentTurn === 'teamA') {
+              this.teamAScore++;
+            } else {
+              this.teamBScore++;
+            }
+          }
+        } else {
+          this.sound.playThud();
+        }
+
+        this.revealAnswers(clickedBtn, isCorrect, false);
+      }
+
+      revealAnswers(clickedBtn, isCorrect, isTimeout) {
+        const q = this.activeQuestions[this.currentIndex];
+        const correctText = q.options[q.correct];
+        const buttons = document.querySelectorAll('#optionsGrid button');
+
+        buttons.forEach(btn => {
+          btn.disabled = true;
+          const text = btn.querySelector('.font-inter').innerText;
+          const icon = btn.querySelector('.option-icon');
+
+          if (text === correctText) {
+            btn.className = "mc-button w-full p-4 bg-green-700 text-left flex items-center gap-4 text-white transform scale-[1.02] transition-transform";
+            icon.innerHTML = `<span class="text-white font-minecraft text-2xl drop-shadow-md">✓</span>`;
+            icon.classList.remove('opacity-0');
+          } else if (btn === clickedBtn && !isCorrect) {
+            btn.className = "mc-button w-full p-4 bg-red-800 text-left flex items-center gap-4 text-white";
+            icon.innerHTML = `<span class="text-white font-minecraft text-2xl drop-shadow-md">✕</span>`;
+            icon.classList.remove('opacity-0');
+          } else {
+            btn.className = "mc-button w-full p-4 bg-stone-800 text-left opacity-40 flex items-center gap-4 text-stone-300";
+          }
+        });
+
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const feedbackTitle = document.getElementById('feedbackTitle');
+        const feedbackExplanation = document.getElementById('feedbackExplanation');
+        const feedbackMedia = document.getElementById('feedbackMedia');
+
+        feedbackContainer.classList.remove('hidden');
+        feedbackMedia.innerHTML = ''; 
+
+        if (isTimeout) {
+          feedbackContainer.className = "mt-8 p-5 bg-orange-900 border-4 border-orange-500 text-white text-center space-y-3 mc-button";
+          feedbackTitle.innerText = "⏳ NUIT TOMBÉE !";
+          feedbackTitle.className = "font-minecraft text-4xl text-orange-400 drop-shadow-sm";
+        } else if (isCorrect) {
+          feedbackContainer.className = "mt-8 p-5 bg-green-900 border-4 border-green-500 text-white text-center space-y-3 mc-button";
+          feedbackTitle.innerText = "✨ CRAFT RÉUSSI !";
+          feedbackTitle.className = "font-minecraft text-4xl text-green-400 drop-shadow-sm";
+        } else {
+          feedbackContainer.className = "mt-8 p-5 bg-red-900 border-4 border-red-600 text-white text-center space-y-3 mc-button";
+          feedbackTitle.innerText = "💥 BOUM !";
+          feedbackTitle.className = "font-minecraft text-4xl text-red-400 drop-shadow-sm";
+        }
+
+        // GESTION MEDIA 
+        if (q.mediaUrl) {
+          feedbackMedia.classList.remove('hidden');
+          const ytMatch = q.mediaUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+          
+          if (ytMatch && ytMatch[1]) {
+            const videoId = ytMatch[1];
+            feedbackMedia.innerHTML = `<iframe class="w-full max-w-md h-48 md:h-64 mx-auto border-4 border-stone-800" src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+          } else {
+            feedbackMedia.innerHTML = `<img src="${q.mediaUrl}" alt="Illustration" class="max-h-48 md:max-h-64 mx-auto object-contain border-4 border-stone-800" onerror="this.src='https://placehold.co/600x400/2a2a2a/4ade80?text=Bloc+Introuvable'">`;
+          }
+        } else {
+          feedbackMedia.classList.add('hidden');
+        }
+
+        feedbackExplanation.innerText = q.explanation || "Mine toujours tout droit, sauf sous tes pieds !";
+        
+        if (this.gameMode === 'duel') {
+          this.updateDuelHeader();
+        }
+      }
+
+      nextQuestion() {
+        this.currentIndex++;
+        if (this.currentIndex < this.activeQuestions.length) {
+          if (this.gameMode === 'duel') {
+            this.currentTurn = (this.currentTurn === 'teamA') ? 'teamB' : 'teamA';
+            this.updateDuelHeader();
+          }
+          this.loadQuestion();
+        } else {
+          this.showResults();
+        }
+      }
+
+      showResults() {
+        this.showScreen('results');
+
+        if (typeof confetti === 'function') {
+          confetti({
+            particleCount: 150,
+            spread: 90,
+            colors: ['#4ade80', '#22c55e', '#a855f7', '#3b82f6', '#facc15'],
+            origin: { y: 0.3 },
+            shapes: ['square']
+          });
+        }
+
+        const mottos = [
+          "Ne creusez jamais directement sous vos pieds. Bonne journée sur le floor !",
+          "Les diamants se trouvent en profondeur, allez chercher vos objectifs aujourd'hui !",
+          "L'union fait la force, bâtissons de superbes expériences LEGO aujourd'hui.",
+          "Fuyez les Creepers (les clients mécontents) et charmez-les avec votre créativité !"
+        ];
+        document.getElementById('dailyMotto').innerText = mottos[Math.floor(Math.random() * mottos.length)];
+
+        if (this.gameMode === 'solo') {
+          document.getElementById('soloScoreDisplay').classList.remove('hidden');
+          document.getElementById('duelScoreDisplay').classList.add('hidden');
+
+          const finalScore = this.soloScore;
+          const total = this.activeQuestions.length;
+          document.getElementById('finalScoreVal').innerText = `${finalScore}/${total}`;
+
+          let rank = "";
+          let icon = "🏆";
+          const ratio = finalScore / total;
+
+          if (ratio === 1) {
+            rank = "Maître Bâtisseur";
+            icon = "👑";
+          } else if (ratio >= 0.75) {
+            rank = "Mineur de Diamant";
+            icon = "💎";
+          } else if (ratio >= 0.5) {
+            rank = "Explorateur de Grotte";
+            icon = "⛏️";
+          } else {
+            rank = "Noob en Terre";
+            icon = "🟩";
+          }
+
+          document.getElementById('rankTitleBadge').innerText = `Titre : ${rank}`;
+          document.getElementById('resultTrophyIcon').innerText = icon;
+          
+          this.saveScoreToLocal({ mode: 'solo', name: this.playerName, score: finalScore, total: total, rank: rank });
+        } else {
+          document.getElementById('soloScoreDisplay').classList.add('hidden');
+          document.getElementById('duelScoreDisplay').classList.remove('hidden');
+
+          document.getElementById('finalUiTeamAName').innerText = this.teamAName;
+          document.getElementById('finalUiTeamBName').innerText = this.teamBName;
+          document.getElementById('finalTeamAScore').innerText = this.teamAScore;
+          document.getElementById('finalTeamBScore').innerText = this.teamBScore;
+
+          const duelWinnerText = document.getElementById('duelWinnerText');
+          let winner = "";
+          if (this.teamAScore > this.teamBScore) {
+            duelWinnerText.innerHTML = `✨ FACTION <span class='text-green-300'>${this.teamAName.toUpperCase()}</span> VAINQUEUR !`;
+            document.getElementById('resultTrophyIcon').innerText = "🟩";
+            winner = this.teamAName;
+          } else if (this.teamBScore > this.teamAScore) {
+            duelWinnerText.innerHTML = `✨ FACTION <span class='text-purple-300'>${this.teamBName.toUpperCase()}</span> VAINQUEUR !`;
+            document.getElementById('resultTrophyIcon').innerText = "🔮";
+            winner = this.teamBName;
+          } else {
+            duelWinnerText.innerHTML = "🤝 ÉGALITÉ PARFAITE !";
+            document.getElementById('resultTrophyIcon').innerText = "⚔️";
+            winner = "Égalité";
+          }
+          
+          this.saveScoreToLocal({ 
+            mode: 'duel', 
+            teamA: this.teamAName, scoreA: this.teamAScore,
+            teamB: this.teamBName, scoreB: this.teamBScore,
+            winner: winner, total: this.activeQuestions.length
+          });
+        }
+      }
+
+      // CLÉ SÉPARÉE POUR MINECRAFT
+      saveScoreToLocal(data) {
+        data.date = new Date().toISOString();
+        let scores = JSON.parse(localStorage.getItem('legoMinecraftQuizScores')) || [];
+        scores.push(data);
+        localStorage.setItem('legoMinecraftQuizScores', JSON.stringify(scores));
+      }
+      
+      showLeaderboard() {
+        this.showScreen('leaderboard');
+        this.renderLeaderboardList('solo');
+      }
+      
+      renderLeaderboardList(filterMode) {
+        const tabSolo = document.getElementById('tabSolo');
+        const tabDuel = document.getElementById('tabDuel');
+        if (filterMode === 'solo') {
+          tabSolo.className = "text-green-800 bg-stone-300 mc-button px-4 py-2 border-b-4 border-green-600";
+          tabDuel.className = "text-stone-600 hover:text-stone-800 px-4 py-2 mc-button";
+        } else {
+          tabDuel.className = "text-green-800 bg-stone-300 mc-button px-4 py-2 border-b-4 border-green-600";
+          tabSolo.className = "text-stone-600 hover:text-stone-800 px-4 py-2 mc-button";
+        }
+        
+        const listContainer = document.getElementById('leaderboardList');
+        listContainer.innerHTML = '';
+        
+        let scores = JSON.parse(localStorage.getItem('legoMinecraftQuizScores')) || [];
+        let filteredScores = scores.filter(s => s.mode === filterMode);
+        
+        if (filteredScores.length === 0) {
+          listContainer.innerHTML = `<div class="text-center py-12 text-stone-500 font-minecraft text-xl">Serveur vide. Aucun record établi.</div>`;
+          return;
+        }
+        
+        if (filterMode === 'solo') {
+          filteredScores.sort((a, b) => {
+            const ratioA = a.score / a.total;
+            const ratioB = b.score / b.total;
+            if (ratioB !== ratioA) return ratioB - ratioA;
+            return new Date(b.date) - new Date(a.date);
+          });
+          
+          filteredScores.forEach((s, idx) => {
+            const date = new Date(s.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' }).replace(':', 'h');
+            const ratio = Math.round((s.score / s.total) * 100);
+            listContainer.innerHTML += `
+              <div class="flex items-center justify-between p-4 bg-stone-200 mc-button text-stone-900 hover:bg-stone-100">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 text-center font-bold font-minecraft ${idx === 0 ? 'text-yellow-600 text-3xl' : 'text-stone-500 text-xl'}">
+                    #${idx + 1}
+                  </div>
+                  <div>
+                    <div class="font-minecraft text-stone-900 text-2xl tracking-wide uppercase">${s.name}</div>
+                    <div class="text-xs text-stone-600 font-inter font-bold">${date} - <span class="text-green-700">${s.rank}</span></div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-green-700 font-minecraft text-3xl leading-none drop-shadow-sm">${s.score} <span class="text-lg text-stone-500">/${s.total}</span></div>
+                  <div class="text-[10px] uppercase font-extrabold text-stone-500 mt-1">XP: ${ratio}%</div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          filteredScores.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          filteredScores.forEach((s, idx) => {
+            const date = new Date(s.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' }).replace(':', 'h');
+            listContainer.innerHTML += `
+              <div class="p-5 bg-stone-200 mc-button space-y-4">
+                <div class="flex justify-between items-center text-xs text-stone-600 font-bold border-b-2 border-stone-300 pb-2 font-inter">
+                  <span>Serveur : ${date}</span>
+                  <span class="px-2.5 py-1 ${s.winner === 'Égalité' ? 'bg-stone-300' : 'bg-green-200 text-green-900'} uppercase font-minecraft text-sm tracking-wide mc-button">Vainqueur: ${s.winner}</span>
+                </div>
+                <div class="flex items-stretch justify-between gap-4">
+                  <div class="flex-1 text-center bg-stone-100 p-3 mc-button flex flex-col justify-center">
+                    <span class="block text-sm font-minecraft uppercase text-stone-600 truncate" title="${s.teamA}">${s.teamA}</span>
+                    <span class="text-4xl font-minecraft text-green-700 drop-shadow-sm leading-none mt-1">${s.scoreA} <span class="text-lg text-stone-400">/${s.total}</span></span>
+                  </div>
+                  <div class="flex items-center px-2 font-minecraft text-stone-500 text-3xl">VS</div>
+                  <div class="flex-1 text-center bg-stone-100 p-3 mc-button flex flex-col justify-center">
+                    <span class="block text-sm font-minecraft uppercase text-stone-600 truncate" title="${s.teamB}">${s.teamB}</span>
+                    <span class="text-4xl font-minecraft text-green-700 drop-shadow-sm leading-none mt-1">${s.scoreB} <span class="text-lg text-stone-400">/${s.total}</span></span>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        }
+      }
+      
+      clearLeaderboard() {
+        if (confirm("Générer un nouveau monde ? Cela effacera tout l'historique des scores !")) {
+          localStorage.removeItem('legoMinecraftQuizScores');
+          this.renderLeaderboardList('solo');
+        }
+      }
+
+      openCustomModal() {
+        document.getElementById('customModal').classList.remove('hidden');
+      }
+
+      closeCustomModal() {
+        document.getElementById('customModal').classList.add('hidden');
+        document.getElementById('addQuestionForm').reset();
+      }
+
+      handleCustomQuestionSubmit(e) {
+        e.preventDefault();
+        const text = document.getElementById('custQText').value.trim();
+        const correct = document.getElementById('custQCorrect').value.trim();
+        const wrong1 = document.getElementById('custQWrong1').value.trim();
+        const wrong2 = document.getElementById('custQWrong2').value.trim();
+        const wrong3 = document.getElementById('custQWrong3').value.trim();
+        const expl = document.getElementById('custQExpl').value.trim() || "Information lootée dans la grotte du magasin !";
+        const media = document.getElementById('custQMedia').value.trim();
+
+        if (!text || !correct || !wrong1) return;
+
+        this.questionsPool.unshift({
+          question: text,
+          options: [correct, wrong1, wrong2 || "Le Herobrine", wrong3 || "Un Bloc de Terre"],
+          correct: 0,
+          category: "Loot du Magasin",
+          explanation: expl,
+          mediaUrl: media 
+        });
+
+        this.initUI();
+        this.closeCustomModal();
+        this.sound.playLevelUp();
+      }
+    }
+
+    const initApp = () => {
+      if (!window.app) {
+        window.app = new QuizApp();
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
